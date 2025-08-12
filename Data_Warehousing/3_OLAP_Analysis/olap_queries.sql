@@ -23,36 +23,32 @@ ORDER BY
 -- Query 2: Drill-down
 -- Objective: Investigate the monthly sales performance within a specific country (e.g., 'United Kingdom').
 -- This query drills down from the country level to monthly details.
-SELECT
-    t.Year,
+SELECT 
     t.Month,
-    SUM(fs.TotalSales) AS MonthlySales
-FROM
-    FactSales fs
-JOIN
-    DimTime t ON fs.TimeID = t.TimeID
-JOIN
-    DimCustomer c ON fs.CustomerID = c.CustomerID
-WHERE
-    c.Country = 'United Kingdom'
-GROUP BY
-    t.Year, t.Month
-ORDER BY
-    t.Year, t.Month;
+    t.Year,
+    p.Category,
+    SUM(f.Quantity) as TotalQuantity,
+    SUM(f.TotalSales) as TotalSales
+FROM FactSales f
+JOIN DimCustomer c ON f.CustomerID = c.CustomerID
+JOIN DimTime t ON f.TimeID = t.TimeID
+JOIN DimProduct p ON f.ProductID = p.ProductID
+WHERE c.Country = 'United Kingdom'
+GROUP BY t.Year, t.Month, p.Category
+ORDER BY t.Year, t.Month, p.Category;
+
 
 
 -- Query 3: Slice
 -- Objective: Isolate sales data for a specific product category ('Decor') to analyze its performance.
 -- This query slices the data cube to show only the 'Decor' category.
-SELECT
-    p.Category,
-    SUM(fs.TotalSales) AS TotalSalesForCategory
-FROM
-    FactSales fs
-JOIN
-    DimProduct p ON fs.ProductID = p.ProductID
-WHERE
-    p.Category = 'Decor'
-GROUP BY
-    p.Category;
+SELECT 
+    c.Country,
+    SUM(f.TotalSales) as TotalSales
+FROM FactSales f
+JOIN DimCustomer c ON f.CustomerID = c.CustomerID
+JOIN DimProduct p ON f.ProductID = p.ProductID
+WHERE p.Category = 'Decor'
+GROUP BY c.Country
+ORDER BY TotalSales DESC;
 
