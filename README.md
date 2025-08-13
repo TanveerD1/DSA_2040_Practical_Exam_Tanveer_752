@@ -268,7 +268,7 @@ This is what the output looks like:
 
 ** A full and more complete analysis can be found here: [OLAP Analysis Report](Data_Warehousing/3_OLAP_Analysis/analysis_report.md)
 
-# Section2: Data Mining
+## Section2: Data Mining
 
 ## Task 1: Data Preprocessing and Exploration(Iris Dataset)
 - I decided to opt for the Iris dataset for this task, which is a classic dataset used for classification tasks.
@@ -458,33 +458,81 @@ Equal-size bias → Validated with silhouette score
 Synthetic data risk → Cross-checked with real ARI
 
 ### Task 3: Classification and Association Rule Mining
+
+#### Part A : Classification
+Loading the preprocessed Iris dataset:
 ```python
-from sklearn.ensemble import RandomForestClassifier
-from sklearn.model_selection import train_test_split
-from sklearn.metrics import classification_report
+df = pd.read_csv('../1_Preprocessing/preprocessed_data/iris_processed.csv')
+X = df.drop('species', axis=1)
+y = df['species']
+```
+#### Decision Tree Classifier
+```python
+dt = DecisionTreeClassifier(max_depth=3, random_state=42)
+dt.fit(X_train, y_train)
+y_pred_dt = dt.predict(X_test)
+```
+#### Evaluation Metrics
+![alt text](image-22.png)
 
-# Splitting the data
-X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
+***Perfect Model Performance:***
+- 100% Accuracy: All 30 test samples were classified correctly
+- Flawless Metrics:
+- precision=1.00: No false positives for any class
+- recall=1.00: No false negatives for any class
+- f1-score=1.00: Perfect balance between precision and recall
 
-# KNN Classification
-knn = KNeighborsClassifier(n_neighbors=3)
+#### Decision Tree Visualization
+![alt text](image-23.png)
+**The visualized tree nodes reveal:**
+- First Split: petal length ≤ 0.246 cm perfectly isolates setosa (gini=0.0)
+- Critical Subsequent Splits:
+- petal length ≤ 0.636 cm and petal width ≤ 0.646 cm separate versicolor
+- petal width ≤ 0.688 cm finalizes virginica isolation
+
+### K-Nearest Neighbors Classifier
+```python
+knn = KNeighborsClassifier(n_neighbors=5)
 knn.fit(X_train, y_train)
-y_pred = knn.predict(X_test)
+y_pred_knn = knn.predict(X_test)
 
-# Evaluation
-print(classification_report(y_test, y_pred))
+print("\nKNN Performance:")
+print(classification_report(y_test, y_pred_knn, target_names=y.unique()))
 ```
+Output:
+![alt text](image-24.png)
+#### KNN Performance
+- **Accuracy**: 100% (30/30 samples correctly classified)
+- **Precision**: 1.00 for all classes (no false positives)
+- **Recall**: 1.00 for all classes (no false negatives)
+- **F1-Score**: 1.00 for all classes (perfect balance)
+- **Confusion Matrix**: All samples correctly classified, no misclassifications.
 
-### K-Means Implementation
+#### KNN Comparison
 ```python
-kmeans = KMeans(n_clusters=3, random_state=42)
-df['cluster'] = kmeans.fit_predict(X)
-
-# Evaluate clustering
-ari = adjusted_rand_score(df['species'], df['cluster'])
-print(f"Adjusted Rand Index (k=3): {ari:.2f}")
+dt_acc = accuracy_score(y_test, y_pred_dt)
+knn_acc = accuracy_score(y_test, y_pred_knn)
+print(f"\nBest model: {'Decision Tree' if dt_acc > knn_acc else 'KNN'} "
+      f"({max(dt_acc, knn_acc):.2f} accuracy)")
 ```
-Result: ARI = 0.73 (showing strong alignment with true species)
+Output:
+![alt text](image-25.png)
+We can see that the best model is KNN with 100% accuracy.
+However this is not a fair comparison as the decision tree is overfitted to the training data and both give 100 percent accuracy.
+
+
+
+# Part B : Association Rule Mining
+
+
+
+
+
+
+
+
+
+
 
 ### Elbow Method Analysis
 ![Elbow Plot](Data_Mining/2_Clustering/elbow_plot.png)
