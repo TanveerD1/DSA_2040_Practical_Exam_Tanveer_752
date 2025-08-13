@@ -459,7 +459,7 @@ Synthetic data risk → Cross-checked with real ARI
 
 # Task 3: Classification and Association Rule Mining
 
-#### Part A : Classification
+## Part A : Classification
 Loading the preprocessed Iris dataset:
 ```python
 df = pd.read_csv('../1_Preprocessing/preprocessed_data/iris_processed.csv')
@@ -520,47 +520,35 @@ Output:
 We can see that the best model is KNN with 100% accuracy.
 However this is not a fair comparison as the decision tree is overfitted to the training data and both give 100 percent accuracy.
 
+## Part B : Association Rule Mining
 
-
-
-
-
-# Part B : Association Rule Mining
-
-
-
-
-
-
-
-
-
-
-### Cluster Performance Comparison
+#### GENERATING BASKET DATA
 ```python
-Results for different k values:
-k=2: ARI = 0.57
-k=3: ARI = 0.73 (optimal)
-k=4: ARI = 0.65
+items = ['milk', 'bread', 'eggs', 'beer', 'diapers', 
+    'cheese', 'wine', 'meat', 'fruit', 'vegetables',
+    'yogurt', 'cereal', 'juice', 'coffee', 'tea',
+    'cookies', 'pasta', 'rice', 'soda', 'chips']
+np.random.seed(752)
+transactions = []
+for _ in range(50):
+    size = random.randint(3, 8)
+    t = random.choices(items, k=size)
+    if random.random() < 0.3: # this part injects a pattern into some transactions
+        t.extend(['bread', 'eggs'])  
+    transactions.append(t)
 ```
 
 
 
-## Running the Code
-1. Clone repository:
-```bash
-git clone https://github.com/yourusername/DSA_2040_Practical_Exam_Tanveer_752.git
-cd DSA_2040_Practical_Exam_Tanveer_752
-```
 
-2. Install dependencies:
-```bash
-pip install -r requirements.txt
-```
 
-3. Run notebooks in order:
-- First: `Data_Mining/1_Preprocessing/preprocessing_iris.ipynb`
-- Then: `Data_Mining/2_Clustering/clustering_iris.ipynb`
+
+
+
+
+
+
+
 
 ## Repository Structure
 ```
