@@ -1,7 +1,7 @@
 # DSA 2040 Practical Exam - Implementation Steps
 # *Tanveer 752*
 ## 1. Data Preprocessing
-
+***Note on Structure, Ignore all images outside the main folders as they are used in creating the README***
 ### Initial Setup
 I first created the project structure and installed required libraries:
 
@@ -613,19 +613,79 @@ In depth analysis of the association rule can be found here: [\[Association Rule
 
 
 
-
-
-
-
 ## Repository Structure
+Note on Structure, Ignore all images outside the main folders as they are used in creating the README
 ```
-DSA_2040_Practical_Exam_Tanveer_752/
-├── Data_Mining/
-│   ├── 1_Preprocessing/
+├── Data_Mining
+│   ├── 1_Preprocessing
+│   │   ├── preprocessed_data
+│   │   │   └── iris_processed.csv
 │   │   ├── preprocessing_iris.ipynb
-│   │   ├── preprocessed_data/
-│   │   └── iris_*.png
-│   └── 2_Clustering/
-│       ├── clustering_iris.ipynb
-│       └── cluster_*.png
+│   │   └── visualizations
+│   │       ├── correlation_heatmap.png
+│   │       ├── iris_boxplots.png
+│   │       ├── iris_heatmap.png
+│   │       └── iris_pairplot.png
+│   ├── 2_Clustering
+│   │   ├── clustering_analysis.md
+│   │   ├── clustering_iris.ipynb
+│   │   └── visualizations
+│   │       ├── cluster_scatter.png
+│   │       └── elbow_plot.png
+│   └── 3_Classification_Association
+│       ├── association_rules_analysis.md
+│       ├── mining_iris_basket.ipynb
+│       └── visualizations
+│           ├── best_rule_metrics.png
+│           └── decision_tree.png
+├── Data_Warehousing
+│   ├── 1_Schema_Design
+│   │   ├── retail_dw.db
+│   │   ├── schema_design.sql
+│   │   ├── star_schema_diagram.png
+│   │   └── tables.ipynb
+│   ├── 2_ETL_Process
+│   │   ├── etl_retail.ipynb
+│   │   ├── online_retail_original.csv
+│   │   └── screenshots
+│   │       └── db_tables_screenshot.png
+│   └── 3_OLAP_Analysis
+│       ├── analysis_report.md
+│       ├── decor_sales_by_country.png
+│       ├── image.png
+│       ├── olap_queries_analysis.ipynb
+│       ├── olap_queries.sql
+│       ├── quarterly_sales_by_country.png
+│       └── sales_by_country_chart.png
+├── image-1.png
+├── image-10.png
+├── image-11.png
+├── image-12.png
+├── image-13.png
+├── image-14.png
+├── image-15.png
+├── image-16.png
+├── image-17.png
+├── image-18.png
+├── image-19.png
+├── image-2.png
+├── image-20.png
+├── image-21.png
+├── image-22.png
+├── image-23.png
+├── image-24.png
+├── image-25.png
+├── image-26.png
+├── image-27.png
+├── image-28.png
+├── image-3.png
+├── image-4.png
+├── image-5.png
+├── image-6.png
+├── image-7.png
+├── image-8.png
+├── image-9.png
+├── image.png
+├── LICENSE
+└── README.md
 ```
