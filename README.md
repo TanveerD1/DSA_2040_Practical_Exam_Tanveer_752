@@ -256,26 +256,16 @@ This is what the output looks like:
 
 # Section2: Data Mining
 
-
-
-
+## Task 1: Data Preprocessing and Exploration(Iris Dataset)
+- I decided to opt for the Iris dataset for this task, which is a classic dataset used for classification tasks.
+- I first loaded the dataset and performed some initial preprocessing steps.
 
 ```python
-from sklearn.datasets import load_iris
-import pandas as pd
-import numpy as np
-from sklearn.preprocessing import MinMaxScaler
-import seaborn as sns
-import matplotlib.pyplot as plt
-
-# Load dataset
 iris = load_iris()
 df = pd.DataFrame(iris.data, columns=iris.feature_names)
 df['species'] = iris.target_names[iris.target]
 ```
-
 ### Missing Value Analysis
-Results showed no missing values in the dataset:
 ```python
 print("Missing values:\n", df.isnull().sum())
 ```
@@ -288,6 +278,7 @@ petal width (cm)     0
 species              0
 dtype: int64
 ```
+Results showed no missing values in the dataset:
 
 ### Feature Normalization
 Applied Min-Max scaling to standardize features:
@@ -295,11 +286,23 @@ Applied Min-Max scaling to standardize features:
 scaler = MinMaxScaler()
 df[iris.feature_names] = scaler.fit_transform(df[iris.feature_names])
 ```
+### Label Encoding
+Encoded species labels were already encoded to numerical values:
+![alt text](image-13.png)
+
+## Exploration
+
+### Summary Statistics
+```python
+print("Summary statistics:\n", df.describe())
+```
+Output:
+![alt text](image-14.png)
 
 ### Visualizations
 
 #### 1. Pairplot Analysis
-![Iris Pairplot](Data_Mining/1_Preprocessing/iris_pairplot.png)
+![alt text](Data_Mining/1_Preprocessing/visualizations/iris_pairplot.png)
 
 Key findings:
 - Clear separation between species clusters
@@ -307,7 +310,7 @@ Key findings:
 - Setosa species most distinctly separated
 
 #### 2. Correlation Heatmap
-![Correlation Heatmap](Data_Mining/1_Preprocessing/iris_heatmap.png)
+![Correlation Heatmap](Data_Mining/1_Preprocessing/visualizations/iris_heatmap.png)
 
 Correlation findings:
 - Strongest correlation: petal length vs petal width (0.96)
@@ -315,12 +318,14 @@ Correlation findings:
 - Weakest correlation: sepal width vs other features
 
 #### 3. Feature Distribution
-![Feature Boxplots](Data_Mining/1_Preprocessing/iris_boxplots.png)
+![Feature Boxplots](Data_Mining/1_Preprocessing/visualizations/iris_boxplots.png)
 
 Distribution insights:
 - Setosa shows distinct measurements
 - Few outliers in sepal width
 - Clear size progression across species
+
+
 
 ## 2. Clustering Analysis
 
