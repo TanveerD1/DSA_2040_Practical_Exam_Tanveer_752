@@ -172,7 +172,21 @@ This included:
     an example of this is:
     ![alt text](image-8.png)
 
-### Task 3: OLAP Queries Analysis
+#### Saving the Preprocessed Data
+```python
+output_dir = Path('preprocessed_data')
+output_dir.mkdir(exist_ok=True)
+csv_path = output_dir / 'iris_processed.csv'
+df.to_csv(csv_path, index=False)
+print(f"Saved processed data to {csv_path}")
+# Verifying files
+print("\nDirectory contents:")
+print(*[f"• {f.name}" for f in output_dir.glob('*')], sep='\n')
+```
+Output:
+![alt text](image-16.png)
+
+# Task 3: OLAP Queries Analysis
 I implemented OLAP queries to analyze the retail data warehouse. The queries included:
 
 #### 1. Rollup
@@ -325,9 +339,141 @@ Distribution insights:
 - Few outliers in sepal width
 - Clear size progression across species
 
+#### Splitting the data into Training and Testing Sets
+```python
+def split_data(data, target_col, test_size=0.2, random_state=42):
+    X = data.drop(target_col, axis=1)
+    y = data[target_col]
+    return train_test_split(X, y, test_size=test_size, random_state=random_state)
 
+X_train, X_test, y_train, y_test = split_data(df, 'species')
+print(f"Train size: {len(X_train)}, Test size: {len(X_test)}")
+```
+Output:
+![alt text](image-15.png)
 
-## 2. Clustering Analysis
+#### Saving the Preprocessed Data
+```python
+output_dir = Path('preprocessed_data')
+output_dir.mkdir(exist_ok=True)
+csv_path = output_dir / 'iris_processed.csv'
+df.to_csv(csv_path, index=False)
+print(f"Saved processed data to {csv_path}")
+# Verifying files
+print("\nDirectory contents:")
+print(*[f"• {f.name}" for f in output_dir.glob('*')], sep='\n')
+```
+Output:
+![alt text](image-16.png)
+
+# Section 3: Clustering Analysis
+Loading the preprocessed Iris dataset:
+```python
+df = pd.read_csv('../1_Preprocessing/preprocessed_data/iris_processed.csv')
+print("Data shape:", df.shape)
+display(df.head())
+```
+Output:
+![alt text](image-17.png)
+
+#### Dropping species column for clustering
+```python
+X = df.drop('species', axis=1)
+y = df['species']
+```
+### K-Means Clustering
+```python
+kmeans = KMeans(n_clusters=3, random_state=42)
+df['cluster'] = kmeans.fit_predict(X)
+```
+### Evaluate Clustering against True Labels
+```python
+ari = adjusted_rand_score(df['species'], df['cluster'])
+print(f"Adjusted Rand Index (k=3): {ari:.2f}")
+```
+Output:
+![alt text](image-18.png)
+
+### Elbow method to find Optimal k
+```python
+k_values = range(1, 7)
+inertias = []
+
+for k in k_values:
+    kmeans = KMeans(n_clusters=k, random_state=42, n_init=10)
+    kmeans.fit(X)
+    inertias.append(kmeans.inertia_)
+```
+The curve shows a clear elbow point at k=3, indicating this is the optimal number of clusters.
+![alt text](image-19.png)
+
+### Comparing K = 2 amd K = 4
+```python
+results = []
+for k in [2, 4]:
+    kmeans = KMeans(n_clusters=k, random_state=42, n_init=10)
+    clusters = kmeans.fit_predict(X)
+    ari = adjusted_rand_score(y, clusters)
+    results.append({'k': k, 'ARI': ari, 'Inertia': kmeans.inertia_})
+
+results_df = pd.DataFrame(results)
+print("\nComparison of k values:")
+display(results_df)
+```
+Output:
+![alt text](image-20.png)
+
+### Best Model is at K = 3
+The best model is identified at K = 3, as it provides the highest ARI score and aligns with the true species labels.
+![alt text](image-21.png)
+
+### K-Means Analysis Brief Summary
+Full Analysis can be found here: [text](Data_Mining/2_Clustering/clustering_analysis.md)
+*Quantitative Validation:**
+- **k=3**: ARI=0.73 (strong agreement with true species)
+- **k=2**: ARI=0.57 (underfitting - merges versicolor/virginica)
+- **k=4**: ARI=0.71 (overfitting - splits virginica artificially)
+
+**Cluster Characteristics:**
+1. **Setosa Cluster** (Perfect separation):
+   - Distinctly small petal measurements
+   - 0% misclassification rate
+   
+2. **Versicolor/Virginica Overlap** (12% misclassification):
+   - Petal length range: 3-5cm (versicolor) vs 4-7cm (virginica)
+   - Primary confusion zone: 4-5cm petal length
+
+**Real-World Implications:**
+1. **Retail Optimization**:
+   - Group similar products (like versicolor/virginica-like items)
+   - Place transitional products in hybrid categories
+
+2. **Diagnostic Systems**:
+   - Flag measurements in 4-5cm petal range for manual review
+   - Use k=3 as first-tier classifier with secondary checks
+
+**Limitations & Mitigations:**
+Spherical assumption → Used MinMax scaling (Task 1)
+Equal-size bias → Validated with silhouette score
+Synthetic data risk → Cross-checked with real ARI
+
+### Task 3: Classification and Association Rule Mining
+```python
+from sklearn.ensemble import RandomForestClassifier
+from sklearn.model_selection import train_test_split
+from sklearn.metrics import classification_report
+
+# Splitting the data
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
+
+# KNN Classification
+knn = KNeighborsClassifier(n_neighbors=3)
+knn.fit(X_train, y_train)
+y_pred = knn.predict(X_test)
+
+# Evaluation
+print(classification_report(y_test, y_pred))
+```
 
 ### K-Means Implementation
 ```python
