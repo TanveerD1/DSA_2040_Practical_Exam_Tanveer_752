@@ -49,7 +49,7 @@ CREATE TABLE IF NOT EXISTS DimCustomer (
 Below is the star schema diagram representing the design:
 ![Star Schema Diagram](Data_Warehousing/1_Schema_Design/star_schema_diagram.png)
 
-# Explanation:
+#### Explanation:
 - **Fact Table**: Contains foreign keys to dimension tables and measures (e.g., sales amount).
 - **Dimension Tables**: Provide descriptive attributes for analysis.    
 - **Star Schema**: Simplifies queries by allowing joins between the fact table and dimension tables.    
@@ -186,7 +186,7 @@ print(*[f"• {f.name}" for f in output_dir.glob('*')], sep='\n')
 Output:
 ![alt text](image-16.png)
 
-# Task 3: OLAP Queries Analysis
+## Task 3: OLAP Queries Analysis
 I implemented OLAP queries to analyze the retail data warehouse. The queries included:
 
 #### 1. Rollup
@@ -268,7 +268,7 @@ This is what the output looks like:
 
 ** A full and more complete analysis can be found here: [OLAP Analysis Report](Data_Warehousing/3_OLAP_Analysis/analysis_report.md)
 
-## Section2: Data Mining
+# Section2: Data Mining
 
 ## Task 1: Data Preprocessing and Exploration(Iris Dataset)
 - I decided to opt for the Iris dataset for this task, which is a classic dataset used for classification tasks.
@@ -304,7 +304,7 @@ df[iris.feature_names] = scaler.fit_transform(df[iris.feature_names])
 Encoded species labels were already encoded to numerical values:
 ![alt text](image-13.png)
 
-## Exploration
+ ## Task 2: Exploratory Data Analysis (EDA)
 
 ### Summary Statistics
 ```python
@@ -366,7 +366,7 @@ print(*[f"• {f.name}" for f in output_dir.glob('*')], sep='\n')
 Output:
 ![alt text](image-16.png)
 
-# Section 3: Clustering Analysis
+## Task 3: Clustering Analysis
 Loading the preprocessed Iris dataset:
 ```python
 df = pd.read_csv('../1_Preprocessing/preprocessed_data/iris_processed.csv')
@@ -457,7 +457,7 @@ Spherical assumption → Used MinMax scaling (Task 1)
 Equal-size bias → Validated with silhouette score
 Synthetic data risk → Cross-checked with real ARI
 
-### Task 3: Classification and Association Rule Mining
+# Task 3: Classification and Association Rule Mining
 
 #### Part A : Classification
 Loading the preprocessed Iris dataset:
@@ -522,6 +522,9 @@ However this is not a fair comparison as the decision tree is overfitted to the 
 
 
 
+
+
+
 # Part B : Association Rule Mining
 
 
@@ -533,15 +536,6 @@ However this is not a fair comparison as the decision tree is overfitted to the 
 
 
 
-
-### Elbow Method Analysis
-![Elbow Plot](Data_Mining/2_Clustering/elbow_plot.png)
-
-Findings:
-- Clear elbow point at k=3
-- Confirms optimal cluster number matches actual species count
-- Diminishing returns after k=3
-
 ### Cluster Performance Comparison
 ```python
 Results for different k values:
@@ -550,24 +544,7 @@ k=3: ARI = 0.73 (optimal)
 k=4: ARI = 0.65
 ```
 
-### Final Cluster Visualization
-![Cluster Plot](Data_Mining/2_Clustering/cluster_scatter.png)
 
-Observations:
-- High accuracy in species separation
-- Some overlap between versicolor and virginica
-- Perfect separation of setosa cluster
-
-## 3. Data Storage
-Final preprocessed data saved for future use:
-```python
-# Create directory if needed
-output_dir = Path('preprocessed_data')
-output_dir.mkdir(exist_ok=True)
-
-# Save processed data
-df.to_csv('preprocessed_data/iris_processed.csv', index=False)
-```
 
 ## Running the Code
 1. Clone repository:
