@@ -1,5 +1,24 @@
 # **Comprehensive Rule Analysis: bread → eggs**
 
+1. Visual Insights
+A. Association Rule Metrics
+![alt text](visualizations/best_rule_metrics.png)
+
+Usefulness:
+This chart visually summarizes the support, confidence, and lift of the bread → eggs rule.
+Quickly communicates statistical strength of the relationship.
+Makes it easy for non-technical stakeholders to grasp why the rule matters.
+Support shows frequency, confidence shows reliability, and lift shows impact beyond chance.
+
+B. Decision Tree Classification
+![alt text](visualizations/decision_tree.png)
+
+Usefulness:
+Shows clear decision paths that predict customer purchases.
+Managers can interpret rules directly (e.g., "If bread is purchased and basket size > 5, recommend eggs").
+Helps verify that the bread → eggs relationship aligns with broader purchasing logic in the dataset.
+Can reveal hidden influencing factors (like time of day, presence of dairy products, or customer segment).
+
 ### **1. Statistical Validation**
 
 * **Support:** 0.30 → This combination appears in **30% of all transactions**, making it a highly frequent pattern worth strategic focus.
