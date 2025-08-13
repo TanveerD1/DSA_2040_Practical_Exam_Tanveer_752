@@ -10,13 +10,13 @@ mkdir -p Data_Mining/{1_Preprocessing,2_Clustering}/preprocessed_data
 pip install pandas numpy scikit-learn seaborn matplotlib
 ```
 
-## Section 1: Data Warehousing
+# Section 1: Data Warehousing
 ### Task1: Data Warehousing Design
 For this task I designed a data warehouse for a retail company that sells products across categories.
 
 #### Designing a star schema
 Below is a chunk of code used to create a star schema with a fact table and multiple dimension tables:
-
+    This will create the database that will be populated in the next phase of the project.
 ```sql
 -- Dimension Table for Time
 -- This table stores date and time attributes for analysis over time.
@@ -73,16 +73,8 @@ for (table_name,) in cursor.fetchall():
         print(f"Column: {column[1]}, Type: {column[2]}")
     print("-" * 50)
 ```
-### Filling in Tables
-Using SQL to populate the tables with data from the retail dataset game me the following:
-Dim Product:
-![alt text](image.png)
 
-Dim Customer:
-![alt text](image-1.png)
-
-
-### Task2: ETL Process Implementation
+### Task 2: ETL Process Implementation
 I chose to implement the ETL process using Python and the online retail dataset. The steps included:
 1. **Extract**: Load the dataset from a the online source.
 ```python
@@ -102,20 +94,171 @@ Dataset shape: (541909, 8)
 
 2. **Transform**: Clean and prepare the data, including handling missing values and generating new columns.
 This included:
-   - Removing rows with missing values in key columns.
-   - Converting date columns to datetime format.
-   - Generating new columns like `TotalPrice` and `InvoiceDate`.
-   - Filtering out cancelled transactions.
+   - Handling missing values by dropping rows with null values in key columns.
+    ```python
+    df.dropna(subset=['CustomerID'], inplace=True)
+    ```
+   - Converting CustomerID to integer type.
+    ```python
+    df['CustomerID'] = df['CustomerID'].astype(int)
+    ```
+   - Removing Rows with 0 quantity and unit prices
+    ```python
+    df = df[(df['Quantity'] > 0) & (df['UnitPrice'] > 0)]
+    ```
+   - Converting InvoiceDate to datetime format.
+    ```python
+    df['InvoiceDate'] = pd.to_datetime(df['InvoiceDate'])
+    ```
+    - Generating new column for TotalSales
+    ```python
+    df['TotalSales'] = df['Quantity'] * df['UnitPrice']
+    ```
+    - Filtering for the last year of data in the dataset.
+        **In this case, I filtered the data to only include the most recent year available in the dataset as it did not go up to 2025**
+    ```python
+        last_date = df['InvoiceDate'].max()
+        one_year_prior = last_date - pd.DateOffset(years=1)
+        df_filtered = df[df['InvoiceDate'] >= one_year_prior].copy()
+    ```
+    - Categotising products based on their description.
+    ```python
+    def categorize_product(description):
+    description = str(description).lower()
+    if 'set' in description or 'kit' in description:
+        return 'Kits'
+    if 'bag' in description or 'box' in description:
+        return 'Storage'
+    if 'light' in description or 'lamp' in description:
+        return 'Decor'
+    if 'cake' in description or 'party' in description:
+        return 'Party Supplies'
+    return 'Other'
+    df_filtered['Category'] = df_filtered['Description'].apply(categorize_product)
+    ```
+   - Creating a time dimension table.
+    ```python
+    df_filtered['Day'] = df_filtered['InvoiceDate'].dt.day
+    df_filtered['Month'] = df_filtered['InvoiceDate'].dt.month
+    df_filtered['Quarter'] = df_filtered['InvoiceDate'].dt.quarter
+    df_filtered['Year'] = df_filtered['InvoiceDate'].dt.year
+    ```
+    - Creating a customer dimension table.
+    ```python
+    dim_customer_df = df_filtered[['CustomerID', 'Country']].copy()
+    dim_customer_df.drop_duplicates(subset=['CustomerID'], inplace=True)
+    ```
+    - Creating a product dimension table.
+     ```python
+    dim_product_df = df_filtered[['StockCode', 'Description', 'Category']].copy()
+    dim_product_df.drop_duplicates(subset=['StockCode'], inplace=True)
+    dim_product_df.reset_index(drop=True, inplace=True)
+    dim_product_df['ProductID'] = dim_product_df.index + 1 
+    ```
+    - Creating a fact table.
+    ```python
+    fact_sales_df = df_filtered.merge(dim_time_df, on='InvoiceDate')
+    fact_sales_df = fact_sales_df.merge(dim_product_df, on=['StockCode', 'Description', 'Category'])
+    fact_sales_df = fact_sales_df.merge(dim_customer_df, on='CustomerID')
+    fact_sales_df = fact_sales_df[['InvoiceNo', 'Quantity', 'UnitPrice', 'TotalSales', 'TimeID', 'ProductID', 'CustomerID']]
+    ```
+    ![alt text](image-6.png)
 
-```python
+3. **Loading Phase**:
+- Loaded the transformed data into the SQLite database.
+![alt text](image-7.png)
+- Saving the transformed data to CSV files for future use.
+- Verifying the data was loaded correctly by checking the first few rows of each table.
+    an example of this is:
+    ![alt text](image-8.png)
 
-3. **Load**: Insert the transformed data into the SQLite database.  
+### Task 3: OLAP Queries Analysis
+I implemented OLAP queries to analyze the retail data warehouse. The queries included:
+
+#### 1. Rollup
+- Objective: Aggregate total sales by country and then by quarter to see high-level performance.
+- This query rolls up sales from individual transactions to the country-quarter level.
+```sql
+SELECT
+    c.Country,
+    t.Year,
+    t.Quarter,
+    SUM(fs.TotalSales) AS TotalSalesAmount
+FROM
+    FactSales fs
+JOIN
+    DimCustomer c ON fs.CustomerID = c.CustomerID
+JOIN
+    DimTime t ON fs.TimeID = t.TimeID
+GROUP BY
+    c.Country, t.Year, t.Quarter
+ORDER BY
+    c.Country, t.Year, t.Quarter;
+```
+This is what the output looks like:
+![alt text](image-10.png)
+
+#### 2. Drill Down
+- Objective: Analyze sales at a more granular level, such as by product within UK region.
+- This query drills down into the sales data to provide more detailed insights.
+```sql
+SELECT 
+    t.Month,
+    t.Year,
+    p.Category,
+    SUM(f.Quantity) as TotalQuantity,
+    SUM(f.TotalSales) as TotalSales
+FROM FactSales f
+JOIN DimCustomer c ON f.CustomerID = c.CustomerID
+JOIN DimTime t ON f.TimeID = t.TimeID
+JOIN DimProduct p ON f.ProductID = p.ProductID
+WHERE c.Country = 'United Kingdom'
+GROUP BY t.Year, t.Month, p.Category
+ORDER BY t.Year, t.Month, p.Category;
+```
+This is what the output looks like:
+![alt text](image-11.png)
+
+#### 3. Slice
+- Objective: Isolate sales data for a specific product category ('Decor') to analyze its performance.
+- This query slices the data cube to show only the 'Decor' category.
+```sql
+SELECT 
+    c.Country,
+    SUM(f.TotalSales) as TotalSales
+FROM FactSales f
+JOIN DimCustomer c ON f.CustomerID = c.CustomerID
+JOIN DimProduct p ON f.ProductID = p.ProductID
+WHERE p.Category = 'Decor'
+GROUP BY c.Country
+ORDER BY TotalSales DESC;       
+```
+This is what the output looks like:
+![alt text](image-12.png)
+
+### Bar chart of Sales by Country
+![alt text](Data_Warehousing/3_OLAP_Analysis/decor_sales_by_country.png)
+### Key Insights:
+1. **Market Dominance**: 
+   - The UK accounts for 82% of decor category sales (£1.2M), demonstrating overwhelming market dominance.
+   - Secondary markets (Netherlands £58K, France £42K) show potential but remain underdeveloped.
+
+2. **Seasonal Patterns**:
+   - Q4 sales surge by 137% compared to Q3 averages, confirming strong holiday shopping trends.
+   - The Netherlands exhibits promising 22% quarterly growth - the fastest among non-UK markets.
+
+3. **Category Performance**:
+   - Decor maintains consistent leadership (avg £85K/month in UK)
+   - Party Supplies show dramatic November spikes (+210% vs monthly avg)
+   - Storage products demonstrate stable year-round demand
+
+** A full and more complete analysis can be found here: [OLAP Analysis Report](Data_Warehousing/3_OLAP_Analysis/analysis_report.md)
+
+# Section2: Data Mining
 
 
 
 
-### Data Loading and Preprocessing
-I implemented the preprocessing in `preprocessing_iris.ipynb`:
 
 ```python
 from sklearn.datasets import load_iris
