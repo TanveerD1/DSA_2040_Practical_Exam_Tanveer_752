@@ -537,8 +537,75 @@ for _ in range(50):
         t.extend(['bread', 'eggs'])  
     transactions.append(t)
 ```
+***Sample Trasnsactions:***
+![alt text](image-26.png)
 
+#### Convert to One-Hot Encoding
+```python
+te = TransactionEncoder()
+te_ary = te.fit(transactions).transform(transactions)
+trans_df = pd.DataFrame(te_ary, columns=te.columns_)
+```
 
+### Mining Rules/Applying Apriori Algorithm
+```python
+frequent_itemsets = apriori(trans_df, 
+                           min_support=0.2, 
+                           use_colnames=True)
+rules = association_rules(frequent_itemsets, 
+                         metric="confidence", 
+                         min_threshold=0.5)
+```
+
+#### Sorting By Lift and selecting top 5:
+```python
+top_rules = rules.sort_values('lift', ascending=False).head(5)
+print("\nTop 5 Rules by Lift:")
+display(top_rules[['antecedents', 'consequents', 
+                  'support', 'confidence', 'lift']])
+```
+Output:
+![alt text](image-27.png)
+
+### Rule Analysis
+```python
+best_rule = top_rules.iloc[0]
+ante = next(iter(best_rule['antecedents']))
+cons = next(iter(best_rule['consequents']))
+print(f"\nBest Rule: {ante} -> {cons}")
+print(f"Support: {best_rule['support']:.2f}, "
+      f"Confidence: {best_rule['confidence']:.2f}, "
+      f"Lift: {best_rule['lift']:.2f}")
+plt.figure(figsize=(10, 6))
+plt.bar(['Support', 'Confidence', 'Lift'],
+        [best_rule['support'], best_rule['confidence'], best_rule['lift']],
+        color=['blue', 'orange', 'green'])
+plt.title(f"Metrics for Rule: {ante} -> {cons}")
+plt.ylabel('Value')
+plt.savefig('../3_Classification_Association/visualizations/best_rule_metrics.png', dpi=300)
+plt.show()  
+```
+Output:
+![alt text](image-28.png)
+
+#### Analysis: bread and eggs
+In depth analysis of the association rule can be found here: [\[Association Rule Analysis\](Data_Mining](Data_Mining/3_Classification_Association/association_rules_analysis.md)
+*Statistical Significance*:
+- **Lift 1.63**: These items occur together 2x more than random chance
+- **Support 0.30**: Pattern appears in 30% of transactions
+- **Confidence 0.65**: When customers buy bread, 65% also buy eggs
+
+*Actionable Recommendations*:
+1. **Cross-Merchandising**: Place 'bread' and 'eggs' in adjacent store sections
+2. **Promotions**: "Buy bread, get 10% off eggs" deals
+3. **Inventory**: Bundle ordering before holidays (e.g., Easter for eggs+bread)
+
+*Limitations*:
+- Synthetic patterns may overestimate real-world lift
+- Doesn't account for:
+  * Item quantities purchased
+  * Time between purchases
+  * External factors (seasonality, pricing)
 
 
 
