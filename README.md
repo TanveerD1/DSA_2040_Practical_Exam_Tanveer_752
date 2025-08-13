@@ -1,5 +1,5 @@
 # DSA 2040 Practical Exam - Implementation Steps
-
+# *Tanveer 752*
 ## 1. Data Preprocessing
 
 ### Initial Setup
@@ -9,6 +9,110 @@ I first created the project structure and installed required libraries:
 mkdir -p Data_Mining/{1_Preprocessing,2_Clustering}/preprocessed_data
 pip install pandas numpy scikit-learn seaborn matplotlib
 ```
+
+## Section 1: Data Warehousing
+### Task1: Data Warehousing Design
+For this task I designed a data warehouse for a retail company that sells products across categories.
+
+#### Designing a star schema
+Below is a chunk of code used to create a star schema with a fact table and multiple dimension tables:
+
+```sql
+-- Dimension Table for Time
+-- This table stores date and time attributes for analysis over time.
+CREATE TABLE IF NOT EXISTS DimTime (
+    TimeID INTEGER PRIMARY KEY AUTOINCREMENT,
+    InvoiceDate TEXT NOT NULL,
+    Day INTEGER,
+    Month INTEGER,
+    Quarter INTEGER,
+    Year INTEGER
+);
+
+-- Dimension Table for Products
+-- This table holds descriptive information about each product.
+CREATE TABLE IF NOT EXISTS DimProduct (
+    ProductID INTEGER PRIMARY KEY AUTOINCREMENT,
+    StockCode TEXT UNIQUE NOT NULL,
+    Description TEXT,
+    Category TEXT -- We will generate this during ETL
+);
+
+-- Dimension Table for Customers
+-- This table stores information about each customer.
+CREATE TABLE IF NOT EXISTS DimCustomer (
+    CustomerID INTEGER PRIMARY KEY, -- Using the original CustomerID from the dataset
+    Country TEXT
+);
+```
+#### Star Diagram
+Below is the star schema diagram representing the design:
+![Star Schema Diagram](Data_Warehousing/1_Schema_Design/star_schema_diagram.png)
+
+# Explanation:
+- **Fact Table**: Contains foreign keys to dimension tables and measures (e.g., sales amount).
+- **Dimension Tables**: Provide descriptive attributes for analysis.    
+- **Star Schema**: Simplifies queries by allowing joins between the fact table and dimension tables.    
+- **Speed & Efficiency for Analysis**: Fact table (FactSales) stores the core measurable events — sales quantities, prices, totals. Dimension tables (DimTime, DimProduct, DimCustomer) hold descriptive context. When you query, the database only needs to join a central fact table with small, indexed dimension tables — this is faster than joining multiple big transactional tables.
+- **Simpler Queries**: With a star schema, analysts can write queries using a consistent pattern: Fact table → join → dimensions No need to navigate messy transactional relationships. This makes it easier to understand and maintain.
+
+### Tables in the retail database
+Checking using python to ensure the tables were created correctly:
+
+```python
+print("\nTables in the database:")
+cursor.execute("SELECT name FROM sqlite_master WHERE type='table';")
+for (table_name,) in cursor.fetchall():
+    print(f"\n=== {table_name} ===")
+    df = pd.read_sql_query(f"SELECT * FROM {table_name} LIMIT 5;", conn)
+    display(df)
+
+    print("\nSchema:")
+    cursor.execute(f"PRAGMA table_info({table_name})")
+    for column in cursor.fetchall():
+        print(f"Column: {column[1]}, Type: {column[2]}")
+    print("-" * 50)
+```
+### Filling in Tables
+Using SQL to populate the tables with data from the retail dataset game me the following:
+Dim Product:
+![alt text](image.png)
+
+Dim Customer:
+![alt text](image-1.png)
+
+
+### Task2: ETL Process Implementation
+I chose to implement the ETL process using Python and the online retail dataset. The steps included:
+1. **Extract**: Load the dataset from a the online source.
+```python
+df = pd.read_excel(DATASET_URL)
+    print(f"[{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}] Successfully extracted {len(df)} rows.")
+    print(f"Dataset shape: {df.shape}")
+    print("\nFirst few rows:")
+    original_data_path = "online_retail_original.csv"
+    df.to_csv(original_data_path, index=False)
+    display(df.head())
+```
+which resulted in:
+
+[2023-10-01 12:00:00] Successfully extracted 541909 rows.
+Dataset shape: (541909, 8)
+![alt text](image-2.png)
+
+2. **Transform**: Clean and prepare the data, including handling missing values and generating new columns.
+This included:
+   - Removing rows with missing values in key columns.
+   - Converting date columns to datetime format.
+   - Generating new columns like `TotalPrice` and `InvoiceDate`.
+   - Filtering out cancelled transactions.
+
+```python
+
+3. **Load**: Insert the transformed data into the SQLite database.  
+
+
+
 
 ### Data Loading and Preprocessing
 I implemented the preprocessing in `preprocessing_iris.ipynb`:
